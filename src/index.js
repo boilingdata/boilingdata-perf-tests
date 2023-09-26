@@ -61,45 +61,51 @@ async function main() {
   let round = 1;
   // We run every hour with new BD connection
   while (true) {
-    // connect and warm up boiling default router
-    const cw = new CloudWatchClient({ region: "eu-west-1" });
-    await bdInstance.connect();
-    await runQuery("SELECT * FROM boilingdata;");
-    let sql = "";
+    try {
+      // connect and warm up boiling default router
+      const cw = new CloudWatchClient({ region: "eu-west-1" });
+      console.log("==== connecting");
+      await bdInstance.connect();
+      await runQuery("SELECT * FROM boilingdata;");
+      let sql = "";
 
-    console.log("==== Round:", round);
+      console.log("==== Round:", round);
 
-    // Cold starts: demo, taxi
-    sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/demo.parquet') LIMIT 10;`;
-    await runTestQuery(cw, sql, "cold_demo");
-    await sleep(5);
-
-    sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/taxi_locations.parquet') LIMIT 10;`;
-    await runTestQuery(cw, sql, "cold_taxi");
-    await sleep(5);
-
-    sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/demo2.parquet') LIMIT 10;`;
-    await runTestQuery(cw, sql, "cold_demo");
-    await sleep(50);
-
-    // Warm but not in results cache, 4 rounds 1min apart
-    for (let index = 1; index < 5; index++) {
-      sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/demo.parquet') LIMIT ${10 + index};`;
-      await runTestQuery(cw, sql, "warm_demo");
+      // Cold starts: demo, taxi
+      sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/demo.parquet') LIMIT 10;`;
+      await runTestQuery(cw, sql, "cold_demo");
       await sleep(5);
 
-      sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/taxi_locations.parquet') LIMIT ${10 + index};`;
-      await runTestQuery(cw, sql, "warm_taxi");
+      sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/taxi_locations.parquet') LIMIT 10;`;
+      await runTestQuery(cw, sql, "cold_taxi");
       await sleep(5);
 
-      sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/demo2.parquet') LIMIT ${10 + index};`;
-      await runTestQuery(cw, sql, "warm_demo");
+      sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/demo2.parquet') LIMIT 10;`;
+      await runTestQuery(cw, sql, "cold_demo");
       await sleep(50);
-    }
 
-    // disconnect
-    console.log("==== Disconnecting and sleeping 10mins..");
-    await bdInstance.close();
+      // Warm but not in results cache, 4 rounds 1min apart
+      for (let index = 1; index < 5; index++) {
+        sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/demo.parquet') LIMIT ${10 + index};`;
+        await runTestQuery(cw, sql, "warm_demo");
+        await sleep(5);
+
+        sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/taxi_locations.parquet') LIMIT ${10 + index};`;
+        await runTestQuery(cw, sql, "warm_taxi");
+        await sleep(5);
+
+        sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/demo2.parquet') LIMIT ${10 + index};`;
+        await runTestQuery(cw, sql, "warm_demo");
+        await sleep(50);
+      }
+
+      // disconnect
+      console.log("==== disconnecting");
+      await bdInstance.close();
+    } catch (err) {
+      console.error(err);
+    }
+    console.log("==== sleeping 10 mins");
     await sleep(10 * 60); // 10 mins
   }
 }
