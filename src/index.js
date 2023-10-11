@@ -27,34 +27,38 @@ async function runQuery(sql) {
 }
 
 async function runTestQuery(cw, sql, MetricName) {
-  const startTime = Date.now();
-  const res = await runQuery(sql);
-  const endTime = Date.now();
-  const timeMs = endTime - startTime;
-  const metric = { metricName: MetricName, timeMs, succeeded: res.length == 10 };
-  console.log(metric);
-  const input = {
-    Namespace: "boilingdata",
-    MetricData: [
-      {
-        MetricName: "queryPerformance",
-        Dimensions: [
-          {
-            Name: "QueryName",
-            Value: MetricName,
-          },
-        ],
-        Timestamp: new Date(),
-        Value: timeMs,
-        Unit: "Milliseconds",
-        StorageResolution: Number(1),
-      },
-    ],
-  };
+  try {
+    const startTime = Date.now();
+    const res = await runQuery(sql);
+    const endTime = Date.now();
+    const timeMs = endTime - startTime;
+    const metric = { metricName: MetricName, timeMs, succeeded: res.length == 10 };
+    console.log(metric);
+    const input = {
+      Namespace: "boilingdata",
+      MetricData: [
+        {
+          MetricName: "queryPerformance",
+          Dimensions: [
+            {
+              Name: "QueryName",
+              Value: MetricName,
+            },
+          ],
+          Timestamp: new Date(),
+          Value: timeMs,
+          Unit: "Milliseconds",
+          StorageResolution: Number(1),
+        },
+      ],
+    };
 
-  const command = new PutMetricDataCommand(input);
-  const response = await cw.send(command);
-  console.log({ httpStatusCode: response["$metadata"].httpStatusCode });
+    const command = new PutMetricDataCommand(input);
+    const response = await cw.send(command);
+    console.log({ httpStatusCode: response["$metadata"].httpStatusCode });
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 async function main() {
