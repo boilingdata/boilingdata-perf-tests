@@ -73,7 +73,14 @@ async function main() {
       await runQuery("SELECT * FROM boilingdata;");
       let sql = "";
 
-      console.log("==== Round:", round);
+      console.log("==== Round:", round++);
+
+      // ROUND:
+      // 5 + 5 + 50 = 1min
+      // 5x: 5 + 5 + 50 = 5min
+      // Sleep 10min
+      // TOTAL TIME: >15min
+      // ==> WARMUP_TIME 17min?
 
       // Cold starts: demo, taxi
       sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/demo.parquet') LIMIT 10;`;
