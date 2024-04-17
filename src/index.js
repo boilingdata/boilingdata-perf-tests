@@ -81,7 +81,7 @@ async function runTestQuery(cw, sql, MetricName) {
     const succeeded = res.length == 10;
     const metric = { metricName: MetricName, timeMs, succeeded };
     console.log(metric);
-    if (succeeded) await postMetricToNyrkio(metric).catch(); // don't fail if this fails..
+    await postMetricToNyrkio(metric).catch(); // don't fail if this fails..
     const input = {
       Namespace: "boilingdata",
       MetricData: [
@@ -140,7 +140,7 @@ async function main() {
       await sleep(5);
 
       sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/demo2.parquet') LIMIT 10;`;
-      await runTestQuery(cw, sql, "cold_demo");
+      await runTestQuery(cw, sql, "cold_demo2");
       await sleep(50);
 
       // Warm but not in results cache, 4 rounds 1min apart
@@ -154,7 +154,7 @@ async function main() {
         await sleep(5);
 
         sql = `SELECT * FROM parquet_scan('s3://boilingdata-demo/demo2.parquet') LIMIT ${10 + index};`;
-        await runTestQuery(cw, sql, "warm_demo");
+        await runTestQuery(cw, sql, "warm_demo2");
         await sleep(50);
       }
 
