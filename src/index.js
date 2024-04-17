@@ -1,5 +1,6 @@
 import { BoilingData, isDataResponse } from "@boilingdata/node-boilingdata";
 import { CloudWatchClient, PutMetricDataCommand } from "@aws-sdk/client-cloudwatch"; // ES Modules import
+import fetch from "node-fetch";
 
 const sleep = (seconds) => new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 
@@ -8,6 +9,50 @@ const bdInstance = new BoilingData({
   password: process.env["BD_PASSWORD"],
   logLevel: "info",
 });
+
+async function postMetricToNyrkio({ metricName, timeMs, succeeded }) {
+  /*
+    curl -s -X POST -H "Content-type: application/json" -H "Authorization: Bearer $TOKEN" https://nyrkio.com/api/v0/result/benchmark1 \
+              -d '[{"timestamp": 1706220908,
+                "metrics": [
+                  {"name": "p50", "unit": "us", "value": 56 },
+                  {"name": "p90", "unit": "us", "value": 125 },
+                  {"name": "p99", "unit": "us", "value": 280 }
+                ],
+                "attributes": {
+                  "git_repo": "https://github.com/nyrkio/nyrkio",
+                  "branch": "main",
+                  "git_commit": "6995e2de6891c724bfeb2db33d7b87775f913ad1",
+                }
+          }]'
+  */
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization:
+      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NjFmYTliMjQ0ZTg0NTBhNmI2MjI0OGIiLCJhdWQiOlsiZmFzdGFwaS11c2VyczphdXRoIl19.iLvU6tCXEwP8w8ev2Oz3NPOTOhW_ORr4nTSA2zXrfag",
+  };
+  const url = `https://nyrkio.com/api/v0/result/${metricName}`;
+  const body = [
+    {
+      timestamp: Date.now(),
+      metrics: [
+        {
+          name: metricName,
+          unit: "ms",
+          value: timeMs,
+        },
+      ],
+      attributes: {
+        git_repo: "https://github.com/boilingdata/boilingdata-perf-tests",
+        branch: "main",
+        git_commit: "",
+      },
+    },
+  ];
+  const res = await fetch(url, { method: "POST", headers, body });
+  const nyrkioResponse = await res.json();
+  console.log({ nyrkioResponse });
+}
 
 async function runQuery(sql) {
   const rows = await new Promise((resolve, reject) => {
@@ -34,6 +79,7 @@ async function runTestQuery(cw, sql, MetricName) {
     const timeMs = endTime - startTime;
     const metric = { metricName: MetricName, timeMs, succeeded: res.length == 10 };
     console.log(metric);
+    if (succeeded) await postMetricToNyrkio(metric).catch(); // don't fail if this fails..
     const input = {
       Namespace: "boilingdata",
       MetricData: [
