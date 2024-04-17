@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch": "^3.418.0",
-    "@boilingdata/node-boilingdata": "^1.0.14"
+    "@boilingdata/node-boilingdata": "^1.0.14",
+    "node-fetch": "^3.3.2"
   }
 }

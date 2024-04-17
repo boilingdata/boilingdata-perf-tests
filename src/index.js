@@ -1,6 +1,7 @@
 import { BoilingData, isDataResponse } from "@boilingdata/node-boilingdata";
 import { CloudWatchClient, PutMetricDataCommand } from "@aws-sdk/client-cloudwatch"; // ES Modules import
 import fetch from "node-fetch";
+import util from "node:util";
 
 const sleep = (seconds) => new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 
