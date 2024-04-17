@@ -45,7 +45,7 @@ async function postMetricToNyrkio({ metricName, timeMs, succeeded }) {
       attributes: {
         git_repo: "https://github.com/boilingdata/boilingdata-perf-tests",
         branch: "main",
-        git_commit: "",
+        git_commit: "f3df1868f3cf76124c28727b48954eea35b71426",
       },
     },
   ];
