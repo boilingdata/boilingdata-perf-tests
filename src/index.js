@@ -35,7 +35,7 @@ async function postMetricToNyrkio({ metricName, timeMs, succeeded }) {
   const url = `https://nyrkio.com/api/v0/result/${metricName}`;
   const body = JSON.stringify([
     {
-      timestamp: Date.now(),
+      timestamp: Math.round(Date.now() / 1000),
       metrics: [
         {
           name: metricName,
