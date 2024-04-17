@@ -77,7 +77,8 @@ async function runTestQuery(cw, sql, MetricName) {
     const res = await runQuery(sql);
     const endTime = Date.now();
     const timeMs = endTime - startTime;
-    const metric = { metricName: MetricName, timeMs, succeeded: res.length == 10 };
+    const succeeded = res.length == 10;
+    const metric = { metricName: MetricName, timeMs, succeeded };
     console.log(metric);
     if (succeeded) await postMetricToNyrkio(metric).catch(); // don't fail if this fails..
     const input = {
