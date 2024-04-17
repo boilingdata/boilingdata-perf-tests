@@ -45,13 +45,13 @@ async function postMetricToNyrkio({ metricName, timeMs, succeeded }) {
       attributes: {
         git_repo: "https://github.com/boilingdata/boilingdata-perf-tests",
         branch: "main",
-        git_commit: "f3df1868f3cf76124c28727b48954eea35b71426",
+        git_commit: "f980ac90bfefea341c505a69623b756bd0f5f7d6",
       },
     },
   ];
   const res = await fetch(url, { method: "POST", headers, body });
   const nyrkioResponse = await res.json();
-  console.log({ nyrkioResponse });
+  console.log(util.inspect({ nyrkioResponse }, false, 20, false));
 }
 
 async function runQuery(sql) {
