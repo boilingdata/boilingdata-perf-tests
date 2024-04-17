@@ -33,7 +33,7 @@ async function postMetricToNyrkio({ metricName, timeMs, succeeded }) {
       "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NjFmYTliMjQ0ZTg0NTBhNmI2MjI0OGIiLCJhdWQiOlsiZmFzdGFwaS11c2VyczphdXRoIl19.iLvU6tCXEwP8w8ev2Oz3NPOTOhW_ORr4nTSA2zXrfag",
   };
   const url = `https://nyrkio.com/api/v0/result/${metricName}`;
-  const body = [
+  const body = JSON.stringify([
     {
       timestamp: Date.now(),
       metrics: [
@@ -49,7 +49,7 @@ async function postMetricToNyrkio({ metricName, timeMs, succeeded }) {
         git_commit: "f980ac90bfefea341c505a69623b756bd0f5f7d6",
       },
     },
-  ];
+  ]);
   const res = await fetch(url, { method: "POST", headers, body });
   const nyrkioResponse = await res.json();
   console.log(util.inspect({ nyrkioResponse }, false, 20, false));
